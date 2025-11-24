@@ -13,6 +13,7 @@ mt19937 gen(rd());
 Texture2D flagTexture;
 Texture2D mineTexture;
 
+
 int randomValue(int a, int b) { 
   return uniform_int_distribution<int>(a,b)(gen); 
 }
@@ -400,6 +401,7 @@ public:
           c.revealed = true;
           if(c.mine) {
             cout << "Game Over! You clicked on a mine at (" << row << ", " << col << ")\n";
+            
             grid.revealAllMines();
             gameOver = true;
             return;
@@ -430,19 +432,27 @@ public:
 };
 int main()
 {
-    Game Game;
     const int screenWidth = 600;
     const int screenHeight = 600;
 
     InitWindow(screenWidth, screenHeight, "Minesweeper");
+    InitAudioDevice();
+    SetMasterVolume(1.0f);
+
+    Music bgMusic = LoadMusicStream("background.ogg");
+    bgMusic.looping = true;
+    PlayMusicStream(bgMusic);
     Image icon = LoadImage("mine.png"); 
     SetWindowIcon(icon);        
     flagTexture = LoadTexture("flag.png");
     mineTexture = LoadTexture("mine.png");
     SetTargetFPS(60);
 
+    Game Game;
     while (!WindowShouldClose())
     {
+      SetMusicVolume(bgMusic, 0.2f);
+      UpdateMusicStream(bgMusic);
         BeginDrawing();
         ClearBackground(RAYWHITE);
         Game.grid.drawGrid();
@@ -451,14 +461,18 @@ int main()
             DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
             DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 20, 40, RED);
             DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 30, 20, WHITE);
+            PauseMusicStream(bgMusic);
+        }
+        else {
+            ResumeMusicStream(bgMusic);
         }
         EndDrawing();
 
         if(IsKeyPressed(KEY_R) && Game.gameOver) {
           Game.reset();
+          PlayMusicStream(bgMusic);
         }
-
-        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !Game.gameOver) {
             int col = GetMouseX() / CELL_SIZE + 1;
             int row = GetMouseY() / CELL_SIZE + 1;
 
@@ -466,7 +480,7 @@ int main()
                 Game.leftClick(row, col);
             }
         }
-        if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
+        if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) && !Game.gameOver) {
             int col = GetMouseX() / CELL_SIZE + 1;
             int row = GetMouseY() / CELL_SIZE + 1;
 
@@ -475,8 +489,12 @@ int main()
             }
         }
     }
+    
 
     CloseWindow();
+    StopMusicStream(bgMusic); 
+    UnloadMusicStream(bgMusic); 
+    CloseAudioDevice();  
     UnloadImage(icon);
     return 0;
 }
