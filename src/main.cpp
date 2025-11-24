@@ -273,19 +273,43 @@ public:
     }
 
     void revealAllMines() {
-            for(int i = 1; i <= MAX_SIZE; i++) {
-              for(int j = 1; j <= MAX_SIZE; j++) {
-                Cell cell = getCell(i, j);
-                if(cell.mine) {
-                  cell.revealed = true;
-                  setCell(cell, i, j);
-                }
-              }
+      for(int i = 1; i <= MAX_SIZE; i++) {
+        for(int j = 1; j <= MAX_SIZE; j++) {
+          Cell cell = getCell(i, j);
+            if(cell.mine) {
+              cell.revealed = true;
+                setCell(cell, i, j);
+            }
+        }
+      }
+    }
+    int calculateCellNeighborMines(int row, int col) {
+      int minesCount = 0;
+      for(int i = -1; i <= 1; i++) {
+        for(int j = -1; j <= 1; j++) {
+          if(i == 0 && j == 0) {
+            continue;
+          }
+          int newRow = row + i;
+          int newCol = col + j;
+          if(newCol >= 1 && newCol <= MAX_SIZE && newRow >= 1 && newRow <= MAX_SIZE) {
+            Cell neighbor = getCell(newRow, newCol);
+            if(neighbor.mine) {
+              minesCount += 1;
             }
           }
-
+        }
+      }
+      return minesCount;
+    }
     void calculateNeighborMines() {
-        
+        for(int i = 1; i <= MAX_SIZE; i++) {
+        for(int j = 1; j <= MAX_SIZE; j++) {
+          Cell currentCell = getCell(i, j);
+          currentCell.neighborMines = calculateCellNeighborMines(i, j);
+          setCell(currentCell, i, j);
+        }
+      }
     }
 };
 
@@ -301,6 +325,7 @@ public:
             Cell c = grid.getCell(row, col);
             c.revealed = true;
             grid.setCell(c, row, col);
+            grid.calculateNeighborMines();
         }
         else {
           Cell c = grid.getCell(row, col);
