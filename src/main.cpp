@@ -24,19 +24,40 @@ struct Cell {
     bool flagged;
 };
 
+struct CellPos {
+  int row;
+  int col;
+};
+
 template <typename T>
+// class Queue {
+//     int front;
+//     int rear;
+//     T arr[MAX_SIZE];
+//     int size = MAX_SIZE;
+
+// public:
+//     Queue() {
+//         front = rear = -1;
+//     }
+
+
+// };
+
+
 class Queue {
+    T* arr;
+    int size;
     int front;
     int rear;
-    T arr[MAX_SIZE];
-    int size = MAX_SIZE;
-
 public:
-    Queue() {
-        front = rear = -1;
+    Queue(int size = MAX_SIZE) {
+        this->size = size;
+        arr = new T[size];
+        front = -1;
+        rear = -1;
     }
-
-
+    
     bool isEmpty() { return front == -1; }
 
     bool isFull() { return rear == size - 1; }
@@ -74,6 +95,8 @@ public:
         if (front > rear)
             front = rear = -1;
     }
+
+
 };
 
 
@@ -311,11 +334,50 @@ public:
         }
       }
     }
+
+    void revealFlood(int row, int col) {
+      Queue<CellPos> toReveal(MAX_SIZE * MAX_SIZE);
+      CellPos startCell = {row, col};
+      toReveal.enqueue(startCell);
+      while(!toReveal.isEmpty()) {
+        CellPos CellPosition = toReveal.Front();
+        toReveal.dequeue();
+
+        Cell currentCell = getCell(CellPosition.row, CellPosition.col);
+
+        if(currentCell.revealed || currentCell.mine) {
+          continue;
+        }
+        currentCell.revealed = true;
+        setCell(currentCell, CellPosition.row, CellPosition.col);
+          if(currentCell.neighborMines > 0) {
+            continue;
+          }
+          for(int i = -1; i <= 1; i++){
+            for(int j = -1; j <= 1; j++) {
+              if(i == 0 && j == 0) {
+                continue;
+              }
+              int newRow = CellPosition.row + i;
+              int newCol = CellPosition.col + j;
+              if(newCol >= 1 && newCol <= MAX_SIZE && newRow >= 1 && newRow <= MAX_SIZE) {
+                Cell neighborCell = getCell(newRow, newCol);
+                if(!neighborCell.revealed && !neighborCell.mine) {
+                    CellPos newCell = {newRow, newCol};
+                    toReveal.enqueue(newCell);
+                }
+              }
+
+            }
+          }
+      }
+    }
 };
 
 class Game {
 public:
     bool firstClick = false;
+    bool gameOver = false;
     DoubleQueue grid;
 
     void leftClick(int row, int col) {
@@ -333,8 +395,18 @@ public:
           if(c.mine) {
             cout << "Game Over! You clicked on a mine at (" << row << ", " << col << ")\n";
             grid.revealAllMines();
+            gameOver = true;
+            return;
              }
-            grid.setCell(c, row, col);
+             else{
+                if(c.neighborMines == 0) {
+                  grid.revealFlood(row, col);
+                }
+                else{
+                  grid.setCell(c, row, col);
+                }
+             }
+            
 
         }
     }
