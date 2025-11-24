@@ -1,13 +1,21 @@
 #include <iostream>
 #include "raylib.h"
 #include <string>
+#include <random>
 #define MAX_SIZE 15
 #define CELL_SIZE 40
 
 using namespace std;
 
+random_device rd;
+mt19937 gen(rd());
+
 Texture2D flagTexture;
 Texture2D mineTexture;
+
+int randomValue(int a, int b) { 
+  return uniform_int_distribution<int>(a,b)(gen); 
+}
 
 struct Cell {
     bool mine;
@@ -168,36 +176,34 @@ public:
             DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
             if(c.flagged) {
                 //f in the cell
-                // DrawText("F", x + padding, y + padding, fontSize, RED);
-                int flagSize = cellSize - 16;                 // a bit smaller than cell
+                int flagSize = cellSize - 16;           
             int flagX = x + (cellSize - flagSize) / 2;
             int flagY = y + (cellSize - flagSize) / 2;
 
             DrawTexturePro(
             flagTexture,
-            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},  // source
-            Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize}, // dest
-            Vector2{0, 0},      // origin (top-left)
-            0.0f,               // rotation
-            WHITE               // tint
+            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height}, 
+            Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize},
+            Vector2{0, 0},  
+            0.0f,              
+            WHITE           
         );
             }
         }
         else if(c.mine) {
             //draw mine
             DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
-            // DrawText("*", x + padding, y + padding, fontSize, RED);
-int mineSize = cellSize - 16;                 // a bit smaller than cell
+            int mineSize = cellSize - 16;
             int mineX = x + (cellSize - mineSize) / 2;
             int mineY = y + (cellSize - mineSize) / 2;
 
             DrawTexturePro(
-            flagTexture,
-            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},  // source
-            Rectangle{(float)mineX, (float)mineY, (float)mineSize, (float)mineSize}, // dest
-            Vector2{0, 0},      // origin (top-left)
-            0.0f,               // rotation
-            WHITE               // tint
+            mineTexture,
+            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},
+            Rectangle{(float)mineX, (float)mineY, (float)mineSize, (float)mineSize}, 
+            Vector2{0, 0}, 
+            0.0f,            
+            WHITE         
         );
         }
         else {
@@ -247,16 +253,41 @@ int mineSize = cellSize - 16;                 // a bit smaller than cell
             drawRow(i);
         }
     }
+
+    void initializeMines(int mines, int clickedRow, int clickedCol) {
+        int minesPlaced = 0;
+        while(minesPlaced < mines) {
+          int row = randomValue(1, MAX_SIZE);
+          int col = randomValue(1, MAX_SIZE);
+          if(row == clickedRow && col == clickedCol) {
+            continue;
+          }
+          Cell c = getCell(row, col);
+          if(!c.mine) {
+            c.mine = true;
+            setCell(c, row, col);
+            cout << "Placed mine at (" << row << ", " << col << ")\n";
+            minesPlaced += 1;
+          }
+        }
+    }
 };
 
 class Game {
 public:
+    bool firstClick = false;
     DoubleQueue grid;
 
     void leftClick(int row, int col) {
-        Cell c = grid.getCell(row, col);
-        c.revealed = true;
-        grid.setCell(c, row, col);
+        if(!firstClick) {
+            firstClick = true;
+            grid.initializeMines(40, row, col);
+        }
+        else {
+          Cell c = grid.getCell(row, col);
+          c.revealed = true;
+          grid.setCell(c, row, col);
+        }
     }
 
     void rightClick(int row, int col) {
