@@ -6,7 +6,8 @@
 
 using namespace std;
 
-Texture2D flagTexture = LoadTexture("flag.png");
+Texture2D flagTexture;
+Texture2D mineTexture;
 
 struct Cell {
     bool mine;
@@ -167,20 +168,44 @@ public:
             DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
             if(c.flagged) {
                 //f in the cell
-                DrawText("F", x + padding, y + padding, fontSize, RED);
+                // DrawText("F", x + padding, y + padding, fontSize, RED);
+                int flagSize = cellSize - 16;                 // a bit smaller than cell
+            int flagX = x + (cellSize - flagSize) / 2;
+            int flagY = y + (cellSize - flagSize) / 2;
+
+            DrawTexturePro(
+            flagTexture,
+            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},  // source
+            Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize}, // dest
+            Vector2{0, 0},      // origin (top-left)
+            0.0f,               // rotation
+            WHITE               // tint
+        );
             }
         }
         else if(c.mine) {
             //draw mine
             DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
-            DrawText("*", x + padding, y + padding, fontSize, RED);
+            // DrawText("*", x + padding, y + padding, fontSize, RED);
+int mineSize = cellSize - 16;                 // a bit smaller than cell
+            int mineX = x + (cellSize - mineSize) / 2;
+            int mineY = y + (cellSize - mineSize) / 2;
+
+            DrawTexturePro(
+            flagTexture,
+            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},  // source
+            Rectangle{(float)mineX, (float)mineY, (float)mineSize, (float)mineSize}, // dest
+            Vector2{0, 0},      // origin (top-left)
+            0.0f,               // rotation
+            WHITE               // tint
+        );
         }
         else {
             //safe cell
             DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
             if(c.neighborMines > 0) {
                 //no of neighbor mines
-                DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, BLUE);
+                DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, WHITE);
             }
         }
         DrawRectangleLines(x, y, cellSize, cellSize, BLACK);
@@ -247,6 +272,8 @@ int main()
     const int screenHeight = 600;
 
     InitWindow(screenWidth, screenHeight, "Minesweeper");
+    flagTexture = LoadTexture("flag.png");
+    mineTexture = LoadTexture("mine.png");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
