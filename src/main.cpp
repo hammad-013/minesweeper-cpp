@@ -380,6 +380,12 @@ public:
     bool gameOver = false;
     DoubleQueue grid;
 
+    Game() {
+        firstClick = false;
+        gameOver = false;
+        grid = DoubleQueue();
+    }
+
     void leftClick(int row, int col) {
         if(!firstClick) {
             firstClick = true;
@@ -416,6 +422,11 @@ public:
         c.flagged = !c.flagged;
         grid.setCell(c, row, col);
     }
+    void reset() {
+        firstClick = false;
+        gameOver = false;
+        grid = DoubleQueue(); 
+    }
 };
 int main()
 {
@@ -424,6 +435,8 @@ int main()
     const int screenHeight = 600;
 
     InitWindow(screenWidth, screenHeight, "Minesweeper");
+    Image icon = LoadImage("mine.png"); 
+    SetWindowIcon(icon);        
     flagTexture = LoadTexture("flag.png");
     mineTexture = LoadTexture("mine.png");
     SetTargetFPS(60);
@@ -433,7 +446,17 @@ int main()
         BeginDrawing();
         ClearBackground(RAYWHITE);
         Game.grid.drawGrid();
+
+        if(Game.gameOver) {
+            DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
+            DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 20, 40, RED);
+            DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 30, 20, WHITE);
+        }
         EndDrawing();
+
+        if(IsKeyPressed(KEY_R) && Game.gameOver) {
+          Game.reset();
+        }
 
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             int col = GetMouseX() / CELL_SIZE + 1;
@@ -454,5 +477,6 @@ int main()
     }
 
     CloseWindow();
+    UnloadImage(icon);
     return 0;
 }
