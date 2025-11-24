@@ -173,7 +173,7 @@ public:
 
         if(!c.revealed) {
             //hidden cell
-            DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
+            DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
             if(c.flagged) {
                 //f in the cell
                 int flagSize = cellSize - 16;           
@@ -192,7 +192,7 @@ public:
         }
         else if(c.mine) {
             //draw mine
-            DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
+            DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
             int mineSize = cellSize - 16;
             int mineX = x + (cellSize - mineSize) / 2;
             int mineY = y + (cellSize - mineSize) / 2;
@@ -208,7 +208,7 @@ public:
         }
         else {
             //safe cell
-            DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
+            DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
             if(c.neighborMines > 0) {
                 //no of neighbor mines
                 DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, WHITE);
@@ -271,6 +271,22 @@ public:
           }
         }
     }
+
+    void revealAllMines() {
+            for(int i = 1; i <= MAX_SIZE; i++) {
+              for(int j = 1; j <= MAX_SIZE; j++) {
+                Cell cell = getCell(i, j);
+                if(cell.mine) {
+                  cell.revealed = true;
+                  setCell(cell, i, j);
+                }
+              }
+            }
+          }
+
+    void calculateNeighborMines() {
+        
+    }
 };
 
 class Game {
@@ -282,11 +298,19 @@ public:
         if(!firstClick) {
             firstClick = true;
             grid.initializeMines(40, row, col);
+            Cell c = grid.getCell(row, col);
+            c.revealed = true;
+            grid.setCell(c, row, col);
         }
         else {
           Cell c = grid.getCell(row, col);
           c.revealed = true;
-          grid.setCell(c, row, col);
+          if(c.mine) {
+            cout << "Game Over! You clicked on a mine at (" << row << ", " << col << ")\n";
+            grid.revealAllMines();
+             }
+            grid.setCell(c, row, col);
+
         }
     }
 
