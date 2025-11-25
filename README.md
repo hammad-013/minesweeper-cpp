@@ -1,5 +1,7 @@
 # Minesweeper with Hatsune Miku
 
+<img src="miku-anim.gif" alt="Alt text" width="300">
+
 A fully functional Minesweeper game built in C++ using raylib, featuring:
 
 - 15×15 grid (225 cells)
