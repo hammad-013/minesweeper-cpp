@@ -12,6 +12,13 @@ mt19937 gen(rd());
 
 Texture2D flagTexture;
 Texture2D mineTexture;
+Texture2D mikuHappy;
+Texture2D mikuSad;
+Music bgMusic;
+Music sadMusic;          
+bool isShaking = false;
+double shakeStartTime = 0.0;
+const float SHAKE_DURATION = 2.0f;
 
 
 int randomValue(int a, int b) { 
@@ -492,6 +499,12 @@ public:
             cout << "Game Over! You clicked on a mine at (" << row << ", " << col << ")\n";
             score += flagScore;
             score = max(0, score);
+
+            StopMusicStream(bgMusic);
+            PlayMusicStream(sadMusic);
+            isShaking = true;
+            shakeStartTime = GetTime();
+
             grid.revealAllMines();
             gameOver = true;
             return;
@@ -542,39 +555,94 @@ public:
 int main()
 {
     const int screenWidth = 600;
-    const int screenHeight = 650;
+    const int screenHeight = 680;
 
     InitWindow(screenWidth, screenHeight, "Minesweeper");
     InitAudioDevice();
     SetMasterVolume(1.0f);
 
-    Music bgMusic = LoadMusicStream("background.ogg");
+    bgMusic = LoadMusicStream("miku.ogg");
+    sadMusic = LoadMusicStream("miku-angry.ogg"); 
     bgMusic.looping = true;
     PlayMusicStream(bgMusic);
+
     Image icon = LoadImage("mine.png"); 
     SetWindowIcon(icon);        
     flagTexture = LoadTexture("flag.png");
     mineTexture = LoadTexture("mine.png");
+    mikuHappy = LoadTexture("miku-happy.png");
+    mikuSad = LoadTexture("miku-sad.png");
     SetTargetFPS(60);
+
+    const int mikuDisplaySize = 100;     
+const int mikuX = screenWidth / 2 - mikuDisplaySize / 2;
+const int mikuY = screenHeight - mikuDisplaySize;
 
     Game Game;
     while (!WindowShouldClose())
     {
       SetMusicVolume(bgMusic, 0.75f);
       UpdateMusicStream(bgMusic);
+      UpdateMusicStream(sadMusic);
         BeginDrawing();
         ClearBackground(BLACK);
         Game.grid.drawGrid();
         
         
 
-        if(Game.gameOver) {
-            DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
-            DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 20, 40, RED);
-            DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 30, 20, WHITE);
-            DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 50, screenHeight/2 + 60, 25, WHITE);
-            PauseMusicStream(bgMusic);
-        }
+    //     if(Game.gameOver) {
+    //         DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
+    //         DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 20, 40, RED);
+    //         DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 30, 20, WHITE);
+    //         DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 50, screenHeight/2 + 60, 25, WHITE);
+
+    // DrawTexturePro(
+    //     mikuSad,
+    //     Rectangle{0, 0, (float)mikuSad.width, (float)mikuSad.height},
+    //     Rectangle{(float)mikuX, (float)mikuY, (float)mikuDisplaySize, (float)mikuDisplaySize},
+    //     Vector2{0, 0},
+    //     0.0f,
+    //     WHITE
+    // );
+
+    //         PauseMusicStream(bgMusic);
+    //     }
+
+    if(Game.gameOver) {
+    double elapsedShake = GetTime() - shakeStartTime;
+
+    if (isShaking && elapsedShake < SHAKE_DURATION) {
+        float intensity = 15.0f * (1.0f - elapsedShake / SHAKE_DURATION);
+        float offsetX = (float)(rand() % 100 - 50) * intensity / 50.0f;
+        float offsetY = (float)(rand() % 100 - 50) * intensity / 50.0f;
+
+        DrawTexturePro(
+            mikuSad,
+            Rectangle{0, 0, (float)mikuSad.width, (float)mikuSad.height},
+            Rectangle{mikuX + offsetX, mikuY + offsetY, (float)mikuDisplaySize, (float)mikuDisplaySize},
+            Vector2{0, 0},
+            0.0f,
+            WHITE
+        );
+    }
+    else {
+        isShaking = false;
+
+        DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 180});
+        DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 40, 40, RED);
+        DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 10, 20, WHITE);
+        DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 60, screenHeight/2 + 40, 25, WHITE);
+
+        DrawTexturePro(
+            mikuSad,
+            Rectangle{0, 0, (float)mikuSad.width, (float)mikuSad.height},
+            Rectangle{(float)mikuX, (float)mikuY, (float)mikuDisplaySize, (float)mikuDisplaySize},
+            Vector2{0, 0},
+            0.0f,
+            WHITE
+        );
+    }
+}
         else if(Game.gameWin) {
             DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
             DrawText("CONGRATULATIONS!", screenWidth/2 - 170, screenHeight/2 - 20, 30, GREEN);
@@ -594,16 +662,31 @@ int main()
         int totalSeconds = (int)elapsed;
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;  
-        DrawText(TextFormat("Time: %02d:%02d", minutes, seconds), 460, 610, 25, WHITE);
-        DrawText(TextFormat("Score: %d", Game.score), 10, 610, 25, WHITE);
+        DrawText(TextFormat("Time: %02d:%02d", minutes, seconds), 460, 630, 25, WHITE);
+        DrawText(TextFormat("Score: %d", Game.score), 10, 630, 25, WHITE);
             ResumeMusicStream(bgMusic);
+
+    float bounce = sinf(GetTime() * 4.0f) * 5.0f;
+    float currentY = mikuY + bounce;
+
+    DrawTexturePro(
+        mikuHappy,
+        Rectangle{0, 0, (float)mikuHappy.width, (float)mikuHappy.height},
+        Rectangle{(float)mikuX, currentY, (float)mikuDisplaySize, (float)mikuDisplaySize},
+        Vector2{0, 0},
+        0.0f,
+        WHITE
+    );
         }
+
         EndDrawing();
 
         if(IsKeyPressed(KEY_R) && (Game.gameOver || Game.gameWin)) {
-          Game.reset();
-          PlayMusicStream(bgMusic);
-        }
+    Game.reset();
+    StopMusicStream(sadMusic);
+    PlayMusicStream(bgMusic);
+    isShaking = false;
+}
         if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !Game.gameOver) {
             int col = GetMouseX() / CELL_SIZE + 1;
             int row = GetMouseY() / CELL_SIZE + 1;
