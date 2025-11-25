@@ -336,7 +336,7 @@ public:
       }
     }
 
-    void revealFlood(int row, int col) {
+    void revealFlood(int row, int col, int& scoreIncrement) {
       Queue<CellPos> toReveal(MAX_SIZE * MAX_SIZE);
       CellPos startCell = {row, col};
       toReveal.enqueue(startCell);
@@ -350,6 +350,7 @@ public:
           continue;
         }
         currentCell.revealed = true;
+        scoreIncrement += 1;
         setCell(currentCell, CellPosition.row, CellPosition.col);
           if(currentCell.neighborMines > 0) {
             continue;
@@ -379,11 +380,17 @@ class Game {
 public:
     bool firstClick = false;
     bool gameOver = false;
+    int score;
+    int flagScore;
+    double startTime;
     DoubleQueue grid;
 
     Game() {
         firstClick = false;
         gameOver = false;
+        score = 0;
+        flagScore = 0;
+        startTime = GetTime();
         grid = DoubleQueue();
     }
 
@@ -393,6 +400,7 @@ public:
             grid.initializeMines(40, row, col);
             Cell c = grid.getCell(row, col);
             c.revealed = true;
+            score += 1;
             grid.setCell(c, row, col);
             grid.calculateNeighborMines();
         }
@@ -401,16 +409,18 @@ public:
           c.revealed = true;
           if(c.mine) {
             cout << "Game Over! You clicked on a mine at (" << row << ", " << col << ")\n";
-            
+            score += flagScore;
+            score = max(0, score);
             grid.revealAllMines();
             gameOver = true;
             return;
              }
              else{
                 if(c.neighborMines == 0) {
-                  grid.revealFlood(row, col);
+                  grid.revealFlood(row, col, score);
                 }
                 else{
+                  score += 1;
                   grid.setCell(c, row, col);
                 }
              }
@@ -421,19 +431,30 @@ public:
 
     void rightClick(int row, int col) {
         Cell c = grid.getCell(row, col);
-        c.flagged = !c.flagged;
-        grid.setCell(c, row, col);
+        if(!c.revealed) {
+          if(!c.flagged && c.mine) {
+            flagScore += 3;
+          }
+          else if(!c.flagged && !c.mine) {
+            flagScore -= 2;
+          }
+          c.flagged = !c.flagged;
+          grid.setCell(c, row, col);
+        } 
     }
     void reset() {
         firstClick = false;
         gameOver = false;
+        score = 0;
+        flagScore = 0;
+        startTime = GetTime();
         grid = DoubleQueue(); 
     }
 };
 int main()
 {
     const int screenWidth = 600;
-    const int screenHeight = 600;
+    const int screenHeight = 650;
 
     InitWindow(screenWidth, screenHeight, "Minesweeper");
     InitAudioDevice();
@@ -454,16 +475,25 @@ int main()
       SetMusicVolume(bgMusic, 0.2f);
       UpdateMusicStream(bgMusic);
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         Game.grid.drawGrid();
+        
+        
 
         if(Game.gameOver) {
             DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
             DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2 - 20, 40, RED);
             DrawText("Press R to Restart", screenWidth/2 - 100, screenHeight/2 + 30, 20, WHITE);
+            DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 50, screenHeight/2 + 60, 25, WHITE);
             PauseMusicStream(bgMusic);
         }
         else {
+        double elapsed = GetTime() - Game.startTime;
+        int totalSeconds = (int)elapsed;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;  
+        DrawText(TextFormat("Time: %02d:%02d", minutes, seconds), 460, 610, 25, WHITE);
+        DrawText(TextFormat("Score: %d", Game.score), 10, 610, 25, WHITE);
             ResumeMusicStream(bgMusic);
         }
         EndDrawing();
