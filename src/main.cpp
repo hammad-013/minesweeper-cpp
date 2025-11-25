@@ -174,63 +174,142 @@ public:
         Grid = tempGrid;
     }
 
-    void drawCell(Cell c, int row, int col, int cellSize) {
-        int x = (col - 1) * cellSize;
-        int y = (row - 1) * cellSize;
-        int padding = cellSize / 4;
-        int fontSize = cellSize / 2;
+    // void drawCell(Cell c, int row, int col, int cellSize) {
+    //     int x = (col - 1) * cellSize;
+    //     int y = (row - 1) * cellSize;
+    //     int padding = cellSize / 4;
+    //     int fontSize = cellSize / 2;
 
-        if(!c.revealed) {
-            //hidden cell
-            DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
-            if(c.flagged) {
-                //f in the cell
-                int flagSize = cellSize - 16;           
+    //     if(!c.revealed) {
+    //         //hidden cell
+    //         DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
+    //         if(c.flagged) {
+    //             //f in the cell
+    //             int flagSize = cellSize - 16;           
+    //         int flagX = x + (cellSize - flagSize) / 2;
+    //         int flagY = y + (cellSize - flagSize) / 2;
+
+    //         DrawTexturePro(
+    //         flagTexture,
+    //         Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height}, 
+    //         Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize},
+    //         Vector2{0, 0},  
+    //         0.0f,              
+    //         WHITE           
+    //     );
+    //         }
+    //     }
+    //     else if(c.mine) {
+    //         //draw mine
+    //         DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
+    //         int mineSize = cellSize - 16;
+    //         int mineX = x + (cellSize - mineSize) / 2;
+    //         int mineY = y + (cellSize - mineSize) / 2;
+
+    //         DrawTexturePro(
+    //         mineTexture,
+    //         Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},
+    //         Rectangle{(float)mineX, (float)mineY, (float)mineSize, (float)mineSize}, 
+    //         Vector2{0, 0}, 
+    //         0.0f,            
+    //         WHITE         
+    //     );
+    //     }
+    //     else {
+    //         //safe cell
+    //         DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
+    //         if(c.neighborMines > 0) {
+    //             //no of neighbor mines
+    //             Color textColor;
+    //             switch(c.neighborMines) {
+    //                 case 1: textColor = BLUE; break;
+    //                 case 2: textColor = GREEN; break;
+    //                 case 3: textColor = RED; break;
+    //             }
+    //             DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, textColor);
+    //         }
+    //     }
+    //     DrawRectangleLines(x, y, cellSize, cellSize, BLACK);
+    // }
+
+    void drawCell(Cell c, int row, int col, int cellSize) {
+    int x = (col - 1) * cellSize;
+    int y = (row - 1) * cellSize;
+    int padding = cellSize / 4;
+    int fontSize = cellSize / 2;
+
+    if(!c.revealed) {
+        DrawRectangle(x, y, cellSize, cellSize, Color{192, 192, 192, 255});
+        
+        DrawLine(x, y, x + cellSize, y, WHITE);
+        DrawLine(x, y, x, y + cellSize, WHITE);
+        DrawLine(x+1, y+1, x + cellSize-1, y+1, WHITE);
+        DrawLine(x+1, y+1, x+1, y + cellSize-1, WHITE);
+        
+        DrawLine(x, y + cellSize, x + cellSize, y + cellSize, Color{128, 128, 128, 255});
+        DrawLine(x + cellSize, y, x + cellSize, y + cellSize, Color{128, 128, 128, 255});
+        DrawLine(x+1, y + cellSize-1, x + cellSize-1, y + cellSize-1, Color{128, 128, 128, 255});
+        DrawLine(x + cellSize-1, y+1, x + cellSize-1, y + cellSize-1, Color{128, 128, 128, 255});
+        
+        if(c.flagged) {
+            int flagSize = cellSize - 16;           
             int flagX = x + (cellSize - flagSize) / 2;
             int flagY = y + (cellSize - flagSize) / 2;
 
             DrawTexturePro(
-            flagTexture,
-            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height}, 
-            Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize},
-            Vector2{0, 0},  
-            0.0f,              
-            WHITE           
-        );
-            }
+                flagTexture,
+                Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height}, 
+                Rectangle{(float)flagX, (float)flagY, (float)flagSize, (float)flagSize},
+                Vector2{0, 0},  
+                0.0f,              
+                WHITE           
+            );
         }
-        else if(c.mine) {
-            //draw mine
-            DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
-            int mineSize = cellSize - 16;
-            int mineX = x + (cellSize - mineSize) / 2;
-            int mineY = y + (cellSize - mineSize) / 2;
+    }
+    else if(c.mine) {
+        DrawRectangle(x, y, cellSize, cellSize, Color{225, 225, 225, 255});
+        
+        DrawRectangleLines(x, y, cellSize, cellSize, Color{128, 128, 128, 255});
+        
+        int mineSize = cellSize - 16;
+        int mineX = x + (cellSize - mineSize) / 2;
+        int mineY = y + (cellSize - mineSize) / 2;
 
-            DrawTexturePro(
+        DrawTexturePro(
             mineTexture,
-            Rectangle{0, 0, (float)flagTexture.width, (float)flagTexture.height},
+            Rectangle{0, 0, (float)mineTexture.width, (float)mineTexture.height},
             Rectangle{(float)mineX, (float)mineY, (float)mineSize, (float)mineSize}, 
             Vector2{0, 0}, 
             0.0f,            
-            WHITE         
+            BLACK         
         );
-        }
-        else {
-            //safe cell
-            DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
-            if(c.neighborMines > 0) {
-                //no of neighbor mines
-                Color textColor;
-                switch(c.neighborMines) {
-                    case 1: textColor = BLUE; break;
-                    case 2: textColor = GREEN; break;
-                    case 3: textColor = RED; break;
-                }
-                DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, textColor);
-            }
-        }
-        DrawRectangleLines(x, y, cellSize, cellSize, BLACK);
     }
+    else {
+        DrawRectangle(x, y, cellSize, cellSize, Color{225, 225, 225, 255});
+        DrawRectangleLines(x, y, cellSize, cellSize, Color{128, 128, 128, 255});
+        
+        if(c.neighborMines > 0) {
+            Color textColor;
+            switch(c.neighborMines) {
+                case 1: textColor = BLUE; break;
+                case 2: textColor = Color{0, 128, 0, 255}; break;
+                case 3: textColor = RED; break;
+                case 4: textColor = Color{0, 0, 128, 255}; break;
+                case 5: textColor = Color{128, 0, 0, 255}; break;
+                case 6: textColor = Color{0, 128, 128, 255}; break;
+                case 7: textColor = BLACK; break;
+                case 8: textColor = Color{128, 128, 128, 255}; break;
+                default: textColor = BLACK;
+            }
+            const char* numberText = TextFormat("%i", c.neighborMines);
+            int textWidth = MeasureText(numberText, fontSize);
+            int textX = x + (cellSize - textWidth) / 2;
+            int textY = y + (cellSize - fontSize) / 2;
+            
+            DrawText(numberText, textX, textY, fontSize, textColor);
+        }
+    }
+}
 
     void drawRow(int row) {
         Queue<Queue<Cell>> tempGrid;
