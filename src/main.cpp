@@ -31,21 +31,6 @@ struct CellPos {
 };
 
 template <typename T>
-// class Queue {
-//     int front;
-//     int rear;
-//     T arr[MAX_SIZE];
-//     int size = MAX_SIZE;
-
-// public:
-//     Queue() {
-//         front = rear = -1;
-//     }
-
-
-// };
-
-
 class Queue {
     T* arr;
     int size;
@@ -235,7 +220,13 @@ public:
             DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
             if(c.neighborMines > 0) {
                 //no of neighbor mines
-                DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, WHITE);
+                Color textColor;
+                switch(c.neighborMines) {
+                    case 1: textColor = BLUE; break;
+                    case 2: textColor = GREEN; break;
+                    case 3: textColor = RED; break;
+                }
+                DrawText(TextFormat("%i", c.neighborMines), x + padding, y + padding, fontSize, textColor);
             }
         }
         DrawRectangleLines(x, y, cellSize, cellSize, BLACK);
@@ -336,7 +327,7 @@ public:
       }
     }
 
-    void revealFlood(int row, int col, int& scoreIncrement) {
+    void revealFlood(int row, int col, int& scoreIncrement, int& safeCells) {
       Queue<CellPos> toReveal(MAX_SIZE * MAX_SIZE);
       CellPos startCell = {row, col};
       toReveal.enqueue(startCell);
@@ -350,6 +341,7 @@ public:
           continue;
         }
         currentCell.revealed = true;
+        safeCells += 1;
         scoreIncrement += 1;
         setCell(currentCell, CellPosition.row, CellPosition.col);
           if(currentCell.neighborMines > 0) {
@@ -378,28 +370,38 @@ public:
 
 class Game {
 public:
-    bool firstClick = false;
-    bool gameOver = false;
+    bool firstClick;
+    bool gameOver;
+    bool gameWin;
     int score;
     int flagScore;
+    int totalSafeCells;
+    int revealedSafeCells;
     double startTime;
     DoubleQueue grid;
+    int totalMines;
 
-    Game() {
+    Game(int mines = 40) {
         firstClick = false;
         gameOver = false;
         score = 0;
         flagScore = 0;
-        startTime = GetTime();
+        gameWin = false;
+        totalMines = mines;
+        totalSafeCells = MAX_SIZE * MAX_SIZE - totalMines;
+        revealedSafeCells = 0;
+        startTime = 0.0;
         grid = DoubleQueue();
     }
 
     void leftClick(int row, int col) {
         if(!firstClick) {
             firstClick = true;
-            grid.initializeMines(40, row, col);
+            grid.initializeMines(totalMines, row, col);
             Cell c = grid.getCell(row, col);
             c.revealed = true;
+            startTime = GetTime();
+            revealedSafeCells += 1;
             score += 1;
             grid.setCell(c, row, col);
             grid.calculateNeighborMines();
@@ -417,12 +419,18 @@ public:
              }
              else{
                 if(c.neighborMines == 0) {
-                  grid.revealFlood(row, col, score);
+                  grid.revealFlood(row, col, score, revealedSafeCells);
                 }
                 else{
+                  revealedSafeCells += 1;
                   score += 1;
                   grid.setCell(c, row, col);
                 }
+                if(revealedSafeCells == totalSafeCells) {
+              cout << "Congratulations! You have revealed all safe cells!\n";
+              gameWin = true;
+              return;
+            }
              }
             
 
@@ -445,9 +453,10 @@ public:
     void reset() {
         firstClick = false;
         gameOver = false;
+        gameWin = false;
         score = 0;
         flagScore = 0;
-        startTime = GetTime();
+        revealedSafeCells = 0;
         grid = DoubleQueue(); 
     }
 };
@@ -472,7 +481,7 @@ int main()
     Game Game;
     while (!WindowShouldClose())
     {
-      SetMusicVolume(bgMusic, 0.2f);
+      SetMusicVolume(bgMusic, 0.75f);
       UpdateMusicStream(bgMusic);
         BeginDrawing();
         ClearBackground(BLACK);
@@ -487,8 +496,22 @@ int main()
             DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 50, screenHeight/2 + 60, 25, WHITE);
             PauseMusicStream(bgMusic);
         }
+        else if(Game.gameWin) {
+            DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0, 150});
+            DrawText("CONGRATULATIONS!", screenWidth/2 - 170, screenHeight/2 - 20, 30, GREEN);
+            DrawText("You Win!", screenWidth/2 - 80, screenHeight/2 + 20, 30, GREEN);
+            DrawText("Press R to Restart", screenWidth/2 - 110, screenHeight/2 + 60, 20, WHITE);
+            DrawText(TextFormat("Score: %d", Game.score), screenWidth/2 - 70, screenHeight/2 + 90, 25, WHITE);
+            PauseMusicStream(bgMusic);
+        }
         else {
-        double elapsed = GetTime() - Game.startTime;
+        double elapsed;
+        if(Game.firstClick) {
+          elapsed = GetTime() - Game.startTime;
+        }
+        else {
+          elapsed = 0.0;
+        }
         int totalSeconds = (int)elapsed;
         int minutes = totalSeconds / 60;
         int seconds = totalSeconds % 60;  
@@ -498,7 +521,7 @@ int main()
         }
         EndDrawing();
 
-        if(IsKeyPressed(KEY_R) && Game.gameOver) {
+        if(IsKeyPressed(KEY_R) && (Game.gameOver || Game.gameWin)) {
           Game.reset();
           PlayMusicStream(bgMusic);
         }
