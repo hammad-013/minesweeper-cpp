@@ -18,7 +18,7 @@ Music bgMusic;
 Music sadMusic;          
 bool isShaking = false;
 double shakeStartTime = 0.0;
-const float SHAKE_DURATION = 2.0f;
+const float SHAKE_DURATION = 4.0f;
 
 
 int randomValue(int a, int b) { 
