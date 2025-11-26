@@ -1,29 +1,6 @@
 {
   "configurations": [
     {
-      "name": "Debug linux",
-      "type": "gdb",
-      "request": "launch",
-      "target": "${workspaceRoot}/build/linux/main",
-      "cwd": "${workspaceRoot}/build/linux/",
-      "valuesFormatting": "parseText",
-      "env": {
-        "LD_LIBRARY_PATH": "/usr/local/lib64/:${env:LD_LIBRARY_PATH}"
-      }
-    },
-    {
-      "name": "Debug mac",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceRoot}/build/mac/main",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${fileDirname}",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "lldb"
-    },
-    {
       "name": "Debug windows",
       "type": "cppdbg",
       "request": "launch",

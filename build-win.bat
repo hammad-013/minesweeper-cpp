@@ -17,7 +17,7 @@ if %errorlevel% equ 0 (
     echo   Executable: build\win\main.exe
     echo ========================================
     echo.
-    build\win\main.exe
+    @REM build\win\main.exe
     exit /b 0
 ) else (
     echo.
