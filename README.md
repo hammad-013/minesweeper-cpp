@@ -7,7 +7,7 @@ A fully functional Minesweeper game built in C++ using raylib, featuring:
 - 15×15 grid (225 cells)
 - 40 mines
 - First-click guaranteed safe
-- Flood-fill reveal (BFS using your own Queue)
+- Flood-fill reveal (BFS using Queue)
 - Flag system with scoring (+3 for correct flag, –2 for wrong)
 - Real-time timer & score
 - Beautiful beveled Windows-95-style cells
