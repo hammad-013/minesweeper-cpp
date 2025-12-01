@@ -176,60 +176,6 @@ public:
     Grid = tempGrid;
   }
 
-  // void drawCell(Cell c, int row, int col, int cellSize) {
-  //     int x = (col - 1) * cellSize;
-  //     int y = (row - 1) * cellSize;
-  //     int padding = cellSize / 4;
-  //     int fontSize = cellSize / 2;
-
-  //     if(!c.revealed) {
-  //         //hidden cell
-  //         DrawRectangle(x, y, cellSize, cellSize, LIGHTGRAY);
-  //         if(c.flagged) {
-  //             //f in the cell
-  //             int flagSize = cellSize - 16;
-  //         int flagX = x + (cellSize - flagSize) / 2;
-  //         int flagY = y + (cellSize - flagSize) / 2;
-
-  //         DrawTexturePro(
-  //         flagTexture,
-  //         Rectangle{0, 0, (float)flagTexture.width,
-  //         (float)flagTexture.height}, Rectangle{(float)flagX, (float)flagY,
-  //         (float)flagSize, (float)flagSize}, Vector2{0, 0}, 0.0f, WHITE
-  //     );
-  //         }
-  //     }
-  //     else if(c.mine) {
-  //         //draw mine
-  //         DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
-  //         int mineSize = cellSize - 16;
-  //         int mineX = x + (cellSize - mineSize) / 2;
-  //         int mineY = y + (cellSize - mineSize) / 2;
-
-  //         DrawTexturePro(
-  //         mineTexture,
-  //         Rectangle{0, 0, (float)flagTexture.width,
-  //         (float)flagTexture.height}, Rectangle{(float)mineX, (float)mineY,
-  //         (float)mineSize, (float)mineSize}, Vector2{0, 0}, 0.0f, WHITE
-  //     );
-  //     }
-  //     else {
-  //         //safe cell
-  //         DrawRectangle(x, y, cellSize, cellSize, DARKGRAY);
-  //         if(c.neighborMines > 0) {
-  //             //no of neighbor mines
-  //             Color textColor;
-  //             switch(c.neighborMines) {
-  //                 case 1: textColor = BLUE; break;
-  //                 case 2: textColor = GREEN; break;
-  //                 case 3: textColor = RED; break;
-  //             }
-  //             DrawText(TextFormat("%i", c.neighborMines), x + padding, y +
-  //             padding, fontSize, textColor);
-  //         }
-  //     }
-  //     DrawRectangleLines(x, y, cellSize, cellSize, BLACK);
-  // }
 
   void drawCell(Cell c, int row, int col, int cellSize) {
     int x = (col - 1) * cellSize;
@@ -589,23 +535,6 @@ int main() {
     ClearBackground(BLACK);
     Game.grid.drawGrid();
 
-    //     if(Game.gameOver) {
-    //         DrawRectangle(0, 0, screenWidth, screenHeight, Color{0, 0, 0,
-    //         150}); DrawText("GAME OVER!", screenWidth/2 - 120, screenHeight/2
-    //         - 20, 40, RED); DrawText("Press R to Restart", screenWidth/2 -
-    //         100, screenHeight/2 + 30, 20, WHITE); DrawText(TextFormat("Score:
-    //         %d", Game.score), screenWidth/2 - 50, screenHeight/2 + 60, 25,
-    //         WHITE);
-
-    // DrawTexturePro(
-    //     mikuSad,
-    //     Rectangle{0, 0, (float)mikuSad.width, (float)mikuSad.height},
-    //     Rectangle{(float)mikuX, (float)mikuY, (float)mikuDisplaySize,
-    //     (float)mikuDisplaySize}, Vector2{0, 0}, 0.0f, WHITE
-    // );
-
-    //         PauseMusicStream(bgMusic);
-    //     }
 
     if (Game.gameOver) {
       double elapsedShake = GetTime() - shakeStartTime;
